@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM dunglas/frankenphp:php8.2
 
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
@@ -10,10 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN a2enmod rewrite
-RUN a2dismod mpm_event && a2enmod mpm_prefork
-
-WORKDIR /var/www/html
+WORKDIR /app
 COPY . .
 
 RUN composer install --optimize-autoloader --no-scripts --no-interaction
@@ -22,6 +19,6 @@ RUN npm install && npm run build
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+ENV SERVER_NAME=":8000"
 
-CMD ["sh", "-c", "a2dismod mpm_event mpm_worker && a2enmod mpm_prefork && php artisan config:clear && php artisan migrate --force && apache2-foreground"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp run --config /etc/caddy/Caddyfile"]
