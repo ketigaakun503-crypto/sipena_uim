@@ -23,4 +23,4 @@ RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs boots
 
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
-CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && apache2-foreground"]
+CMD ["sh", "-c", "sed -i \"s/80/${PORT}/g\" /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && php artisan config:clear && php artisan migrate --force && apache2-foreground"]
