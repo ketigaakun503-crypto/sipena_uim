@@ -8,22 +8,37 @@
 </head>
 <body class="bg-gray-100">
 
+    {{-- OVERLAY (mobile) --}}
+    <div id="sidebar-overlay"
+        class="hidden lg:hidden z-40 fixed inset-0 bg-black/50"
+        onclick="toggleSidebar()">
+    </div>
+
     {{-- SIDEBAR --}}
-    <aside class="top-0 left-0 z-50 fixed flex flex-col bg-[#1E3A5F] shadow-xl w-64 h-screen text-white">
+    <aside id="sidebar"
+        class="top-0 left-0 z-50 fixed flex flex-col bg-[#1E3A5F] shadow-xl w-64 h-screen text-white transition-transform -translate-x-full lg:translate-x-0 duration-300">
+
         {{-- Logo --}}
-        <div class="px-6 py-5 border-white/10 border-b">
-            <h1 class="font-bold text-lg tracking-wide">SIPENA UIM</h1>
-            <p class="mt-0.5 text-blue-200 text-xs truncate">{{ auth()->user()->name }}</p>
-            <span class="inline-block bg-white/10 mt-1.5 px-2 py-0.5 border border-white/20 rounded-full text-blue-100 text-xs">
-                {{ ucwords(str_replace('_', ' ', auth()->user()->getRoleNames()->first() ?? '-')) }}
-            </span>
+        <div class="flex justify-between items-center px-6 py-5 border-white/10 border-b">
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">SIPENA UIM</h1>
+                <p class="mt-0.5 text-blue-200 text-xs truncate">{{ auth()->user()->name }}</p>
+                <span class="inline-block bg-white/10 mt-1.5 px-2 py-0.5 border border-white/20 rounded-full text-blue-100 text-xs">
+                    {{ ucwords(str_replace('_', ' ', auth()->user()->getRoleNames()->first() ?? '-')) }}
+                </span>
+            </div>
+            {{-- Close button mobile --}}
+            <button onclick="toggleSidebar()" class="lg:hidden hover:bg-white/10 p-1 rounded-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 py-3 overflow-y-auto scrollbar-hide">
+        <nav class="flex-1 py-3 overflow-y-auto">
             <ul class="space-y-0.5 px-3">
 
-                {{-- Dashboard --}}
                 <li>
                     <a href="{{ route('dashboard') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all
@@ -35,7 +50,6 @@
                     </a>
                 </li>
 
-                {{-- Admin SDM --}}
                 @role('admin_sdm')
                 <li class="px-3 pt-4 pb-1">
                     <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Master Data</span>
@@ -75,7 +89,6 @@
                 </li>
                 @endrole
 
-                {{-- Pengajuan --}}
                 @hasanyrole('admin_sdm|rektor|wakil_rektor|dekan|kaprodi|ka_biro|dosen|tendik')
                 <li class="px-3 pt-4 pb-1">
                     <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Pengajuan</span>
@@ -102,7 +115,6 @@
                 </li>
                 @endhasanyrole
 
-                {{-- Persetujuan --}}
                 @hasanyrole('admin_sdm|rektor|wakil_rektor|dekan|kaprodi|ka_biro')
                 <li class="px-3 pt-4 pb-1">
                     <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Persetujuan</span>
@@ -119,7 +131,6 @@
                 </li>
                 @endhasanyrole
 
-                {{-- E-Letter --}}
                 @hasanyrole('dosen|admin_sdm|rektor|wakil_rektor|dekan|kaprodi|ka_biro')
                 <li class="px-3 pt-4 pb-1">
                     <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">E-Letter</span>
@@ -139,14 +150,13 @@
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all
                         {{ request()->routeIs('serdos.*') ? 'bg-white/15 text-white font-medium' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                         <svg class="flex-shrink-0 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
                         </svg>
                         Surat Serdos
                     </a>
                 </li>
                 @endhasanyrole
 
-                {{-- Verifikasi & Laporan --}}
                 @role('admin_sdm')
                 <li class="px-3 pt-4 pb-1">
                     <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Verifikasi</span>
@@ -224,11 +234,19 @@
     </aside>
 
     {{-- MAIN CONTENT --}}
-    <main class="ml-64 min-h-screen">
+    <main class="lg:ml-64 min-h-screen">
 
         {{-- TOP BAR --}}
-        <header class="top-0 z-40 sticky flex justify-between items-center bg-white px-8 py-4 border-gray-200 border-b">
-            <h2 class="font-semibold text-gray-700 text-base">@yield('header')</h2>
+        <header class="top-0 z-40 sticky flex justify-between items-center bg-white px-4 lg:px-8 py-4 border-gray-200 border-b">
+            <div class="flex items-center gap-3">
+                {{-- Hamburger (mobile only) --}}
+                <button onclick="toggleSidebar()" class="lg:hidden hover:bg-gray-100 p-2 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <h2 class="font-semibold text-gray-700 text-sm lg:text-base">@yield('header')</h2>
+            </div>
 
             {{-- Notifikasi --}}
             <div class="relative">
@@ -245,7 +263,7 @@
                     @endif
                 </button>
 
-                <div id="dropdown-notif" class="hidden right-0 z-50 absolute bg-white shadow-lg mt-2 border border-gray-100 rounded-xl w-80 overflow-hidden">
+                <div id="dropdown-notif" class="hidden right-0 z-50 absolute bg-white shadow-lg mt-2 border border-gray-100 rounded-xl w-72 lg:w-80 overflow-hidden">
                     <div class="flex justify-between items-center bg-gray-50 px-4 py-3 border-b">
                         <span class="font-semibold text-gray-700 text-sm">Notifikasi</span>
                         <form action="{{ route('notifikasi.baca-semua') }}" method="POST">
@@ -261,12 +279,7 @@
                             <p class="mt-1 text-gray-400 text-xs">{{ $notif->created_at->diffForHumans() }}</p>
                         </div>
                         @empty
-                        <div class="px-4 py-8 text-gray-400 text-sm text-center">
-                            <svg class="mx-auto mb-2 w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
-                            Tidak ada notifikasi
-                        </div>
+                        <div class="px-4 py-8 text-gray-400 text-sm text-center">Tidak ada notifikasi</div>
                         @endforelse
                     </div>
                 </div>
@@ -274,7 +287,7 @@
         </header>
 
         {{-- CONTENT --}}
-        <div class="p-6">
+        <div class="p-4 lg:p-6">
             @if(session('success'))
             <div class="flex items-center gap-3 bg-green-50 mb-5 px-4 py-3 border border-green-200 rounded-xl text-green-800 text-sm">
                 <svg class="flex-shrink-0 w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -295,6 +308,30 @@
             @yield('content')
         </div>
     </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar  = document.getElementById('sidebar');
+            const overlay  = document.getElementById('sidebar-overlay');
+            const isOpen   = !sidebar.classList.contains('-translate-x-full');
+
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        // Tutup notif kalau klik di luar
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdown-notif');
+            if (!e.target.closest('.relative') && dropdown) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
