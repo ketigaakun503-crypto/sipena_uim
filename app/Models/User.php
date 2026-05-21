@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
- * @method bool hasRole(string $role)
+ * @mixin \Spatie\Permission\Traits\HasRoles
  */
 class User extends Authenticatable
 {
@@ -36,13 +36,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pegawai::class);
     }
-    public function notifikasis()
-{
-    return $this->hasMany(Notifikasi::class)->latest();
-}
 
-public function notifikasiTidakDibaca()
-{
-    return $this->hasMany(Notifikasi::class)->where('dibaca', false);
-}
+    public function notifikasis()
+    {
+        return $this->hasMany(Notifikasi::class)->latest();
+    }
+
+    public function notifikasiTidakDibaca()
+    {
+        return $this->hasMany(Notifikasi::class)->where('dibaca', false);
+    }
 }
