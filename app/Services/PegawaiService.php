@@ -99,14 +99,23 @@ class PegawaiService
         });
     }
 
-   public function destroy(int $id)
+  public function delete(int $id): void
 {
-    try {
-        $this->pegawaiService->delete($id);
-        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
-    } catch (\Exception $e) {
-        dd($e->getMessage(), $e->getTrace());
-    }
+    DB::transaction(function () use ($id) {
+        $pegawai = $this->pegawaiRepository->findById($id);
+        
+        // Hapus jabatan pivot dulu
+        $pegawai->jabatans()->detach();
+        
+        $user = $pegawai->user;
+        
+        // Hapus pegawai dulu, baru user
+        $this->pegawaiRepository->delete($id);
+        
+        if ($user) {
+            $user->delete();
+        }
+    });
 }
 
     public function assignJabatan(int $pegawaiId, int $jabatanId, string $jenis = 'rangkap'): void
