@@ -80,10 +80,11 @@ class PegawaiController extends Controller
     }
 
     public function destroy(int $id)
-    {
-        $this->pegawaiService->delete($id);
-        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
-    }
+{
+    dd('destroy called', $id); // ← tambah baris ini
+    $this->pegawaiService->delete($id);
+    return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
+}
 
     // Assign jabatan tambahan (multi-role)
     public function assignJabatan(Request $request, int $id)
