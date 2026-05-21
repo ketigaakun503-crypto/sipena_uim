@@ -99,14 +99,15 @@ class PegawaiService
         });
     }
 
-    public function delete(int $id): void
-    {
-        DB::transaction(function () use ($id) {
-            $pegawai = $this->pegawaiRepository->findById($id);
-            $pegawai->user->delete();
-            $this->pegawaiRepository->delete($id);
-        });
+   public function destroy(int $id)
+{
+    try {
+        $this->pegawaiService->delete($id);
+        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
+    } catch (\Exception $e) {
+        dd($e->getMessage(), $e->getTrace());
     }
+}
 
     public function assignJabatan(int $pegawaiId, int $jabatanId, string $jenis = 'rangkap'): void
     {
