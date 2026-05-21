@@ -81,7 +81,6 @@ class PegawaiController extends Controller
 
     public function destroy(int $id)
 {
-    dd('destroy called', $id); // ← tambah baris ini
     $this->pegawaiService->delete($id);
     return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
 }
