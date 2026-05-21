@@ -35,15 +35,14 @@ Route::middleware('auth')->group(function () {
         // Master Data
         Route::resource('unit-kerja', UnitKerjaController::class);
         Route::resource('jabatan', JabatanController::class);
-
-        Route::get('pegawai/export-excel', [PegawaiController::class, 'exportExcel'])->name('pegawai.export');
+        
+Route::get('pegawai/export-excel', [PegawaiController::class, 'exportExcel'])->name('pegawai.export');
 Route::get('pegawai/template-import', [PegawaiController::class, 'templateImport'])->name('pegawai.template');
 Route::post('pegawai/import-excel', [PegawaiController::class, 'importExcel'])->name('pegawai.import');
 
-        // Pegawai
-        Route::resource('pegawai', PegawaiController::class);
-        Route::post('pegawai/{id}/assign-jabatan', [PegawaiController::class, 'assignJabatan'])->name('pegawai.assign-jabatan');
-        Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::class, 'revokeJabatan'])->name('pegawai.revoke-jabatan');
+Route::resource('pegawai', PegawaiController::class);
+Route::post('pegawai/{id}/assign-jabatan', [PegawaiController::class, 'assignJabatan'])->name('pegawai.assign-jabatan');
+Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::class, 'revokeJabatan'])->name('pegawai.revoke-jabatan');
 
         // Verifikasi
         Route::get('verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
