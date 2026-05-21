@@ -102,10 +102,15 @@
                             <a href="{{ route('pegawai.edit', $pegawai->id) }}"
                                 class="bg-amber-50 hover:bg-amber-100 px-2 py-1.5 rounded-lg font-medium text-amber-600 text-xs">Edit</a>
                             <form action="{{ route('pegawai.destroy', $pegawai->id) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Yakin hapus pegawai ini?')">
-                                @csrf @method('DELETE')
-                                <button class="bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg font-medium text-red-600 text-xs">Hapus</button>
-                            </form>
+    id="form-delete-{{ $pegawai->id }}">
+    @csrf
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="button" 
+        onclick="if(confirm('Yakin hapus pegawai ini?')) document.getElementById('form-delete-{{ $pegawai->id }}').submit()"
+        class="bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg font-medium text-red-600 text-xs">
+        Hapus
+    </button>
+</form>
                         </div>
                     </td>
                 </tr>
