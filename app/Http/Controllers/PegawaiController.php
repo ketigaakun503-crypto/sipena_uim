@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 use App\Exports\PegawaiExport;
 use App\Imports\PegawaiImport;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\Storage;
 
 class PegawaiController extends Controller
 {
@@ -30,24 +31,33 @@ class PegawaiController extends Controller
         return view('pegawai.create', compact('jabatans', 'roles'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nama_lengkap'  => 'required|string|max:255',
-            'email'         => 'required|email|unique:users,email',
-            'password'      => 'required|min:6',
-            'jenis_kelamin' => 'required|in:L,P',
-            'jenis_pegawai' => 'required|in:dosen,tendik',
-            'status'        => 'required|in:aktif,nonaktif,pensiun',
-            'role'          => 'required|exists:roles,name',
-            'nip'           => 'nullable|unique:pegawais,nip',
-            'nidn'          => 'nullable|unique:pegawais,nidn',
-            'jabatan_id'    => 'nullable|exists:jabatans,id',
-        ]);
+   public function store(Request $request)
+{
+    
+    $request->validate([
+        'nama_lengkap'  => 'required|string|max:255',
+        'email'         => 'required|email|unique:users,email',
+        'password'      => 'required|min:6',
+        'jenis_kelamin' => 'required|in:L,P',
+        'jenis_pegawai' => 'required|in:dosen,tendik',
+        'status'        => 'required|in:aktif,nonaktif,pensiun',
+        'role'          => 'required|exists:roles,name',
+        'nip'           => 'nullable|unique:pegawais,nip',
+        'nidn'          => 'nullable|unique:pegawais,nidn',
+        'jabatan_id'    => 'nullable|exists:jabatans,id',
+        'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-        $this->pegawaiService->create($request->all());
-        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
+    $data = $request->all();
+
+    // Handle foto upload
+    if ($request->hasFile('foto')) {
+        $data['foto'] = $request->file('foto')->store('foto-pegawai', 'public');
     }
+
+    $this->pegawaiService->create($data);
+    return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
+}
 
     public function show(int $id)
     {
@@ -173,5 +183,23 @@ public function importExcel(Request $request)
     }
 
     return redirect()->route('pegawai.index')->with('success', $message);
+}
+public function uploadFoto(Request $request, int $id)
+{
+    $request->validate([
+        'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $pegawai = $this->pegawaiService->findById($id);
+
+    // Hapus foto lama kalau ada
+    if ($pegawai->foto && Storage::disk('public')->exists($pegawai->foto)) {
+        Storage::disk('public')->delete($pegawai->foto);
+    }
+
+    $path = $request->file('foto')->store('foto-pegawai', 'public');
+    $this->pegawaiService->update($id, ['foto' => $path]);
+
+    return back()->with('success', 'Foto profil berhasil diperbarui.');
 }
 }

@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
         // Master Data
         Route::resource('unit-kerja', UnitKerjaController::class);
         Route::resource('jabatan', JabatanController::class);
-        
+        Route::post('pegawai/{id}/upload-foto', [PegawaiController::class, 'uploadFoto'])->name('pegawai.upload-foto');
 Route::get('pegawai/export-excel', [PegawaiController::class, 'exportExcel'])->name('pegawai.export');
 Route::get('pegawai/template-import', [PegawaiController::class, 'templateImport'])->name('pegawai.template');
 Route::post('pegawai/import-excel', [PegawaiController::class, 'importExcel'])->name('pegawai.import');

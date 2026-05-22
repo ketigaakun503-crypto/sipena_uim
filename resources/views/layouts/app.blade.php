@@ -89,10 +89,10 @@
                 </li>
                 @endrole
 
-                @hasanyrole('admin_sdm|rektor|wakil_rektor|dekan|kaprodi|ka_biro|dosen|tendik')
-                <li class="px-3 pt-4 pb-1">
-                    <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Pengajuan</span>
-                </li>
+                @hasanyrole('rektor|wakil_rektor|dekan|kaprodi|ka_biro|dosen|tendik')
+<li class="px-3 pt-4 pb-1">
+    <span class="font-semibold text-blue-300/70 text-xs uppercase tracking-widest">Pengajuan</span>
+</li>
                 <li>
                     <a href="{{ route('cuti.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all

@@ -8,13 +8,18 @@
     {{-- Info Pegawai --}}
     <div class="col-span-2 bg-white rounded-xl shadow-sm p-6">
         <div class="flex justify-between items-start mb-4">
-            <div>
-                <h3 class="text-xl font-bold text-gray-800">{{ $pegawai->nama_lengkap }}</h3>
-                <p class="text-gray-500 text-sm">{{ $pegawai->email }}</p>
-            </div>
-            <a href="{{ route('pegawai.edit', $pegawai->id) }}"
-                class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800">Edit</a>
+    <div class="flex items-center gap-4">
+        {{-- Foto --}}
+        <img src="{{ $pegawai->foto ? asset('storage/'.$pegawai->foto) : 'https://ui-avatars.com/api/?name='.urlencode($pegawai->nama_lengkap).'&background=1E3A5F&color=fff' }}"
+    class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
+        <div>
+            <h3 class="text-xl font-bold text-gray-800">{{ $pegawai->nama_lengkap }}</h3>
+            <p class="text-gray-500 text-sm">{{ $pegawai->email }}</p>
         </div>
+    </div>
+    <a href="{{ route('pegawai.edit', $pegawai->id) }}"
+        class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800">Edit</a>
+</div>
 
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>

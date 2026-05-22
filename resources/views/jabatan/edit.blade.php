@@ -33,11 +33,15 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Level Hierarki</label>
-            <input type="number" name="level" value="{{ old('level', $jabatan->level) }}" min="0"
-                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            <p class="text-xs text-gray-400 mt-1">0=Rektor, 1=Wakil Rektor/Dekan, 2=Kaprodi/Ka.Biro, dst</p>
-        </div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Level Hierarki</label>
+    <select name="level" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <option value="">-- Pilih Level --</option>
+        <option value="0" {{ old('level', $jabatan->level) == '0' ? 'selected' : '' }}>0 — Rektor</option>
+        <option value="1" {{ old('level', $jabatan->level) == '1' ? 'selected' : '' }}>1 — Wakil Rektor / Dekan</option>
+        <option value="2" {{ old('level', $jabatan->level) == '2' ? 'selected' : '' }}>2 — Kaprodi / Ka. Biro</option>
+        <option value="3" {{ old('level', $jabatan->level) == '3' ? 'selected' : '' }}>3 — Staf / Dosen / Tendik</option>
+    </select>
+</div>
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800">Update</button>
             <a href="{{ route('jabatan.index') }}" class="px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Batal</a>

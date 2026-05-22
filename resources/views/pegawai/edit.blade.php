@@ -6,6 +6,25 @@
 <div class="max-w-2xl bg-white rounded-xl shadow-sm p-6">
     <form action="{{ route('pegawai.update', $pegawai->id) }}" method="POST" class="space-y-4">
         @csrf @method('PUT')
+        {{-- Foto Profil --}}
+<div class="flex items-center gap-5 pb-4 border-b border-gray-100">
+    <div id="foto-preview" class="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center border-2 border-gray-200 overflow-hidden flex-shrink-0">
+        @if($pegawai->foto)
+            <img src="{{ asset('storage/' . $pegawai->foto) }}" class="w-full h-full object-cover">
+        @else
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+        @endif
+    </div>
+    <div>
+        <p class="text-sm font-medium text-gray-700 mb-1">Foto Profil</p>
+        <input type="file" name="foto" accept="image/jpg,image/jpeg,image/png"
+            class="text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#1E3A5F] file:text-white hover:file:bg-[#16304f] file:cursor-pointer"
+            onchange="previewFoto(this)">
+        <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengubah foto</p>
+    </div>
+</div>
 
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
