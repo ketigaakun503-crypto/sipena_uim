@@ -36,4 +36,18 @@ class Pegawai extends Model
     {
         return $this->hasMany(RiwayatJabatan::class);
     }
+    public function kontrakKerjas()
+{
+    return $this->hasMany(KontrakKerja::class)->latest();
+}
+
+public function kontrakAktif()
+{
+    return $this->hasOne(KontrakKerja::class)->where('status', 'aktif')->latest();
+}
+
+public function suratKeputusans()
+{
+    return $this->hasMany(SuratKeputusan::class)->latest();
+}
 }

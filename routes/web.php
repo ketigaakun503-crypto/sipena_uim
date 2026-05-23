@@ -13,6 +13,8 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\SerdosController;
 use App\Http\Controllers\UnitKerjaController;
 use App\Http\Controllers\VerifikasiController;
+use App\Http\Controllers\KontrakKerjaController;
+use App\Http\Controllers\SuratKeputusanController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -43,7 +45,13 @@ Route::post('pegawai/import-excel', [PegawaiController::class, 'importExcel'])->
 Route::resource('pegawai', PegawaiController::class);
 Route::post('pegawai/{id}/assign-jabatan', [PegawaiController::class, 'assignJabatan'])->name('pegawai.assign-jabatan');
 Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::class, 'revokeJabatan'])->name('pegawai.revoke-jabatan');
+Route::resource('kontrak-kerja', KontrakKerjaController::class);
+    Route::get('kontrak-kerja/{id}/pdf', [KontrakKerjaController::class, 'cetakPdf'])->name('kontrak-kerja.pdf');
 
+    Route::resource('surat-keputusan', SuratKeputusanController::class);
+    Route::post('surat-keputusan/{id}/terbitkan', [SuratKeputusanController::class, 'terbitkan'])->name('surat-keputusan.terbitkan');
+    Route::get('surat-keputusan/{id}/pdf', [SuratKeputusanController::class, 'cetakPdf'])->name('surat-keputusan.pdf');
+    Route::post('surat-keputusan/{id}/upload', [SuratKeputusanController::class, 'uploadFile'])->name('surat-keputusan.upload');
         // Verifikasi
         Route::get('verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::post('verifikasi/jafa/{id}', [VerifikasiController::class, 'prosesJafa'])->name('verifikasi.jafa');
@@ -60,7 +68,10 @@ Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::
         Route::get('laporan/lembur/pdf', [LaporanController::class, 'lemburPdf'])->name('laporan.lembur.pdf');
         Route::get('laporan/jafa-serdos', [LaporanController::class, 'jafaSerdos'])->name('laporan.jafa-serdos');
     });
-
+    Route::middleware(['auth'])->group(function () {
+    Route::get('kontrak-kerja-saya', [KontrakKerjaController::class, 'milik'])->name('kontrak-kerja.milik');
+    Route::get('sk-saya', [SuratKeputusanController::class, 'milik'])->name('surat-keputusan.milik');
+});
     // ── Pejabat Struktural ────────────────────────────────────────────────────
     Route::middleware('role:admin_sdm,rektor,wakil_rektor,dekan,kaprodi,ka_biro')->group(function () {
         Route::get('approval', [ApprovalController::class, 'index'])->name('approval.index');
