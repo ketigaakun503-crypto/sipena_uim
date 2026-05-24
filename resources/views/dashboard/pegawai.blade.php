@@ -94,7 +94,7 @@
             <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Kontrak Aktif</p>
             <p class="font-medium text-gray-800 text-sm">{{ $kontrakAktif->nomor_kontrak }}</p>
             <p class="text-gray-400 text-xs mt-0.5">
-                {{ $kontrakAktif->tanggal_mulai->format('d/m/Y') }} — {{ $kontrakAktif->tanggal_selesai->format('d/m/Y') }}
+                {{ $kontrakAktif->tanggal_mulai?->format('d/m/Y') }} — {{ $kontrakAktif->tanggal_selesai?->format('d/m/Y') ?? 'Tidak terbatas' }}
             </p>
         </div>
         @php $sisa = $kontrakAktif->sisa_hari; @endphp
