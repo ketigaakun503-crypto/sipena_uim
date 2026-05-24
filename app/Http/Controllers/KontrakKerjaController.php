@@ -74,13 +74,16 @@ class KontrakKerjaController extends Controller
             ->with('success', 'Kontrak kerja berhasil dihapus.');
     }
 
-    public function cetakPdf(int $id)
-    {
-        $kontrak = $this->kontrakService->findById($id);
-        $pdf     = Pdf::loadView('kontrak-kerja.pdf', compact('kontrak'))
-                      ->setPaper('a4', 'portrait');
-        return $pdf->download("kontrak-{$kontrak->nomor_kontrak}.pdf");
-    }
+   public function cetakPdf(int $id)
+{
+    $kontrak = $this->kontrakService->findById($id);
+    $pdf     = Pdf::loadView('kontrak-kerja.pdf', compact('kontrak'))
+                  ->setPaper('a4', 'portrait');
+    
+    $nomorFile = str_replace(['/', '\\'], '-', $kontrak->nomor_kontrak);
+    
+    return $pdf->download("kontrak-{$nomorFile}.pdf");
+}
 
     // Halaman kontrak untuk pegawai sendiri
     public function milik()
