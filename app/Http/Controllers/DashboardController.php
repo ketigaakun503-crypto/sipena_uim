@@ -56,34 +56,43 @@ class DashboardController extends Controller
     }
 
     private function dashboardPejabat($user)
-    {
-        $queueCuti   = CutiApproval::with(['pengajuanCuti.pegawai'])
-            ->where('approver_id', $user->id)
-            ->where('status', 'menunggu')
-            ->count();
+{
+    $pegawai = $user->pegawai;
 
-        $queueLembur = LemburApproval::where('approver_id', $user->id)
-            ->where('status', 'menunggu')
-            ->count();
+    $queueCuti   = CutiApproval::where('approver_id', $user->id)
+        ->where('status', 'menunggu')->count();
+    $queueLembur = LemburApproval::where('approver_id', $user->id)
+        ->where('status', 'menunggu')->count();
 
-        return view('dashboard.pejabat', compact('queueCuti', 'queueLembur', 'user'));
-    }
+    $sisaCuti       = $pegawai?->sisa_cuti ?? 0;
+    $totalPengajuan = $pegawai ? PengajuanCuti::where('pegawai_id', $pegawai->id)->count() : 0;
+    $jafaProgress   = $pegawai ? SuratJafa::where('pegawai_id', $pegawai->id)->latest()->first() : null;
+    $serdosProgress = $pegawai ? SuratSerdos::where('pegawai_id', $pegawai->id)->latest()->first() : null;
+    $kontrakAktif   = $pegawai ? \App\Models\KontrakKerja::where('pegawai_id', $pegawai->id)->where('status', 'aktif')->latest()->first() : null;
 
-    private function dashboardPegawai($user)
-    {
-        $pegawai = $user->pegawai;
+    return view('dashboard.pegawai', compact(
+        'user', 'pegawai', 'queueCuti', 'queueLembur',
+        'sisaCuti', 'totalPengajuan', 'jafaProgress', 'serdosProgress', 'kontrakAktif'
+    ));
+}
 
-        if (!$pegawai) {
-            return view('dashboard.index');
-        }
+private function dashboardPegawai($user)
+{
+    $pegawai = $user->pegawai;
 
-        $sisaCuti      = $pegawai->sisa_cuti;
-        $totalPengajuan = PengajuanCuti::where('pegawai_id', $pegawai->id)->count();
-        $jafaProgress  = SuratJafa::where('pegawai_id', $pegawai->id)->latest()->first();
-        $serdosProgress = SuratSerdos::where('pegawai_id', $pegawai->id)->latest()->first();
+    if (!$pegawai) return view('dashboard.index');
 
-        return view('dashboard.pegawai', compact(
-            'pegawai', 'sisaCuti', 'totalPengajuan', 'jafaProgress', 'serdosProgress'
-        ));
-    }
+    $sisaCuti       = $pegawai->sisa_cuti;
+    $totalPengajuan = PengajuanCuti::where('pegawai_id', $pegawai->id)->count();
+    $jafaProgress   = SuratJafa::where('pegawai_id', $pegawai->id)->latest()->first();
+    $serdosProgress = SuratSerdos::where('pegawai_id', $pegawai->id)->latest()->first();
+    $kontrakAktif   = \App\Models\KontrakKerja::where('pegawai_id', $pegawai->id)->where('status', 'aktif')->latest()->first();
+    $queueCuti      = 0;
+    $queueLembur    = 0;
+
+    return view('dashboard.pegawai', compact(
+        'user', 'pegawai', 'sisaCuti', 'totalPengajuan',
+        'jafaProgress', 'serdosProgress', 'kontrakAktif', 'queueCuti', 'queueLembur'
+    ));
+}
 }
