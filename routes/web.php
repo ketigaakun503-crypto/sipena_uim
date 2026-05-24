@@ -32,26 +32,32 @@ Route::middleware('auth')->group(function () {
     Route::post('notifikasi/{id}/baca', [NotifikasiController::class, 'tandaiDibaca'])->name('notifikasi.baca');
     Route::post('notifikasi/baca-semua', [NotifikasiController::class, 'tandaiSemuaDibaca'])->name('notifikasi.baca-semua');
 
+    // ── Semua user yang login bisa akses ──────────────────────────────────────
+    Route::get('kontrak-kerja-saya', [KontrakKerjaController::class, 'milik'])->name('kontrak-kerja.milik');
+    Route::get('kontrak-kerja/{id}/pdf', [KontrakKerjaController::class, 'cetakPdf'])->name('kontrak-kerja.pdf');
+    Route::get('sk-saya', [SuratKeputusanController::class, 'milik'])->name('surat-keputusan.milik');
+    Route::get('surat-keputusan/{id}/pdf', [SuratKeputusanController::class, 'cetakPdf'])->name('surat-keputusan.pdf');
+
     // ── Admin SDM ─────────────────────────────────────────────────────────────
     Route::middleware('role:admin_sdm')->group(function () {
         // Master Data
         Route::resource('unit-kerja', UnitKerjaController::class);
         Route::resource('jabatan', JabatanController::class);
+
         Route::post('pegawai/{id}/upload-foto', [PegawaiController::class, 'uploadFoto'])->name('pegawai.upload-foto');
-Route::get('pegawai/export-excel', [PegawaiController::class, 'exportExcel'])->name('pegawai.export');
-Route::get('pegawai/template-import', [PegawaiController::class, 'templateImport'])->name('pegawai.template');
-Route::post('pegawai/import-excel', [PegawaiController::class, 'importExcel'])->name('pegawai.import');
+        Route::get('pegawai/export-excel', [PegawaiController::class, 'exportExcel'])->name('pegawai.export');
+        Route::get('pegawai/template-import', [PegawaiController::class, 'templateImport'])->name('pegawai.template');
+        Route::post('pegawai/import-excel', [PegawaiController::class, 'importExcel'])->name('pegawai.import');
+        Route::resource('pegawai', PegawaiController::class);
+        Route::post('pegawai/{id}/assign-jabatan', [PegawaiController::class, 'assignJabatan'])->name('pegawai.assign-jabatan');
+        Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::class, 'revokeJabatan'])->name('pegawai.revoke-jabatan');
 
-Route::resource('pegawai', PegawaiController::class);
-Route::post('pegawai/{id}/assign-jabatan', [PegawaiController::class, 'assignJabatan'])->name('pegawai.assign-jabatan');
-Route::delete('pegawai/{pegawai}/jabatan/{jabatan}/revoke', [PegawaiController::class, 'revokeJabatan'])->name('pegawai.revoke-jabatan');
-Route::resource('kontrak-kerja', KontrakKerjaController::class);
-    Route::get('kontrak-kerja/{id}/pdf', [KontrakKerjaController::class, 'cetakPdf'])->name('kontrak-kerja.pdf');
+        // Kontrak Kerja & SK
+        Route::resource('kontrak-kerja', KontrakKerjaController::class);
+        Route::resource('surat-keputusan', SuratKeputusanController::class);
+        Route::post('surat-keputusan/{id}/terbitkan', [SuratKeputusanController::class, 'terbitkan'])->name('surat-keputusan.terbitkan');
+        Route::post('surat-keputusan/{id}/upload', [SuratKeputusanController::class, 'uploadFile'])->name('surat-keputusan.upload');
 
-    Route::resource('surat-keputusan', SuratKeputusanController::class);
-    Route::post('surat-keputusan/{id}/terbitkan', [SuratKeputusanController::class, 'terbitkan'])->name('surat-keputusan.terbitkan');
-    Route::get('surat-keputusan/{id}/pdf', [SuratKeputusanController::class, 'cetakPdf'])->name('surat-keputusan.pdf');
-    Route::post('surat-keputusan/{id}/upload', [SuratKeputusanController::class, 'uploadFile'])->name('surat-keputusan.upload');
         // Verifikasi
         Route::get('verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::post('verifikasi/jafa/{id}', [VerifikasiController::class, 'prosesJafa'])->name('verifikasi.jafa');
@@ -68,10 +74,7 @@ Route::resource('kontrak-kerja', KontrakKerjaController::class);
         Route::get('laporan/lembur/pdf', [LaporanController::class, 'lemburPdf'])->name('laporan.lembur.pdf');
         Route::get('laporan/jafa-serdos', [LaporanController::class, 'jafaSerdos'])->name('laporan.jafa-serdos');
     });
-    Route::middleware(['auth'])->group(function () {
-    Route::get('kontrak-kerja-saya', [KontrakKerjaController::class, 'milik'])->name('kontrak-kerja.milik');
-    Route::get('sk-saya', [SuratKeputusanController::class, 'milik'])->name('surat-keputusan.milik');
-});
+
     // ── Pejabat Struktural ────────────────────────────────────────────────────
     Route::middleware('role:admin_sdm,rektor,wakil_rektor,dekan,kaprodi,ka_biro')->group(function () {
         Route::get('approval', [ApprovalController::class, 'index'])->name('approval.index');
@@ -95,5 +98,6 @@ Route::resource('kontrak-kerja', KontrakKerjaController::class);
         Route::get('serdos/{id}/pdf', [SerdosController::class, 'cetakPdf'])->name('serdos.pdf');
         Route::post('serdos/{id}/upload-scan', [SerdosController::class, 'uploadScan'])->name('serdos.upload-scan');
     });
+
     Route::delete('cuti/{id}/batal', [CutiController::class, 'batal'])->name('cuti.batal');
 });
