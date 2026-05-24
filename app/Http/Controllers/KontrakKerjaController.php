@@ -74,13 +74,13 @@ class KontrakKerjaController extends Controller
             ->with('success', 'Kontrak kerja berhasil dihapus.');
     }
 
-   public function cetakPdf(int $id)
+  public function cetakPdf(int $id)
 {
     $kontrak = $this->kontrakService->findById($id);
     $pdf     = Pdf::loadView('kontrak-kerja.pdf', compact('kontrak'))
                   ->setPaper('a4', 'portrait');
     
-    $nomorFile = str_replace(['/', '\\'], '-', $kontrak->nomor_kontrak);
+    $nomorFile = str_replace(['/', '\\', ' '], '-', $kontrak->nomor_kontrak);
     
     return $pdf->download("kontrak-{$nomorFile}.pdf");
 }

@@ -83,13 +83,16 @@ class SuratKeputusanController extends Controller
         return back()->with('success', 'SK berhasil diterbitkan.');
     }
 
-    public function cetakPdf(int $id)
-    {
-        $sk  = $this->skService->findById($id);
-        $pdf = Pdf::loadView('surat-keputusan.pdf', compact('sk'))
-                  ->setPaper('a4', 'portrait');
-        return $pdf->download("sk-{$sk->nomor_sk}.pdf");
-    }
+   public function cetakPdf(int $id)
+{
+    $sk  = $this->skService->findById($id);
+    $pdf = Pdf::loadView('surat-keputusan.pdf', compact('sk'))
+              ->setPaper('a4', 'portrait');
+    
+    $nomorFile = str_replace(['/', '\\', ' '], '-', $sk->nomor_sk);
+    
+    return $pdf->download("sk-{$nomorFile}.pdf");
+}
 
     public function uploadFile(Request $request, int $id)
     {
