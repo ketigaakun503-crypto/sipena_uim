@@ -184,6 +184,8 @@ public function importExcel(Request $request)
 
     return redirect()->route('pegawai.index')->with('success', $message);
 }
+
+
 public function uploadFoto(Request $request, int $id)
 {
     $request->validate([
@@ -197,13 +199,15 @@ public function uploadFoto(Request $request, int $id)
         unlink(public_path($pegawai->foto));
     }
 
-    // Simpan dengan nama unik
+    // Generate nama file unik
     $extension = $request->file('foto')->getClientOriginalExtension();
-    $filename  = 'foto-pegawai/' . time() . '_' . $id . '.' . $extension;
+    $filename  = time() . '_' . $id . '.' . $extension;
 
-    $request->file('foto')->move(public_path('foto-pegawai'), basename($filename));
+    // Pindahkan ke public/foto-pegawai
+    $request->file('foto')->move(public_path('foto-pegawai'), $filename);
 
-    $this->pegawaiService->update($id, ['foto' => $filename]);
+    // Simpan path lengkap ke database
+    $this->pegawaiService->update($id, ['foto' => 'foto-pegawai/' . $filename]);
 
     return back()->with('success', 'Foto profil berhasil diperbarui.');
 }
