@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-2xl bg-white rounded-xl shadow-sm p-6">
-    <form action="{{ route('pegawai.update', $pegawai->id) }}" method="POST" class="space-y-4">
+    <form action="{{ route('pegawai.update', $pegawai->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf @method('PUT')
         {{-- Foto Profil --}}
 <div class="flex items-center gap-5 pb-4 border-b border-gray-100">
