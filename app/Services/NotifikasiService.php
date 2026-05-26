@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Notifikasi;
 use App\Models\PengajuanCuti;
+use App\Models\PengajuanLembur;
 use App\Models\Pegawai;
 
 class NotifikasiService
@@ -23,7 +24,6 @@ class NotifikasiService
     {
         $pegawai = Pegawai::with('jabatanAktif.unitKerja')->findOrFail($pengajuan->pegawai_id);
 
-        // Kumpulkan semua atasan dari semua jabatan aktif pegawai
         $notifData = [];
 
         foreach ($pegawai->jabatanAktif as $jabatan) {
@@ -51,7 +51,44 @@ class NotifikasiService
             }
         }
 
-        // Batch insert semua notifikasi sekaligus
+        if (!empty($notifData)) {
+            Notifikasi::insert(array_values($notifData));
+        }
+    }
+
+    public function kirimNotifikasiLembur(PengajuanLembur $pengajuan): void
+    {
+        $pegawai = Pegawai::with('jabatanAktif.unitKerja')->findOrFail($pengajuan->pegawai_id);
+
+        $notifData = [];
+
+        foreach ($pegawai->jabatanAktif as $jabatan) {
+            $atasanPegawaiJabatan = \App\Models\PegawaiJabatan::with('pegawai.user')
+                ->whereHas('jabatan', function ($q) use ($jabatan) {
+                    $q->where('unit_kerja_id', $jabatan->unit_kerja_id)
+                      ->where('level', '<', $jabatan->level);
+                })
+                ->where('is_aktif', true)
+                ->get();
+
+            foreach ($atasanPegawaiJabatan as $atasanPJ) {
+                if ($atasanPJ->pegawai && $atasanPJ->pegawai->user) {
+                    $notifData[$atasanPJ->pegawai->user_id] = [
+                        'user_id'    => $atasanPJ->pegawai->user_id,
+                        'judul'      => 'Pengajuan Lembur Baru',
+                        'pesan'      => "{$pegawai->nama_lengkap} mengajukan lembur pada " .
+                                        \Carbon\Carbon::parse($pengajuan->tanggal_lembur)->format('d/m/Y') .
+                                        " ({$pengajuan->jam_mulai} - {$pengajuan->jam_selesai}, {$pengajuan->jumlah_jam} jam). Silakan tinjau pengajuan.",
+                        'tipe'       => 'warning',
+                        'url'        => route('approver.lembur.show', $pengajuan->id),
+                        'dibaca'     => false,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+        }
+
         if (!empty($notifData)) {
             Notifikasi::insert(array_values($notifData));
         }

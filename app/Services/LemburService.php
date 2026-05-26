@@ -10,6 +10,8 @@ use Carbon\Carbon;
 
 class LemburService
 {
+    public function __construct(protected NotifikasiService $notifikasiService) {}
+
     public function hitungJamLembur(string $jamMulai, string $jamSelesai): float
     {
         $mulai   = Carbon::parse($jamMulai);
@@ -24,13 +26,13 @@ class LemburService
             $jumlahJam = $this->hitungJamLembur($data['jam_mulai'], $data['jam_selesai']);
 
             $lembur = PengajuanLembur::create([
-                'pegawai_id'    => $pegawaiId,
+                'pegawai_id'     => $pegawaiId,
                 'tanggal_lembur' => $data['tanggal_lembur'],
-                'jam_mulai'     => $data['jam_mulai'],
-                'jam_selesai'   => $data['jam_selesai'],
-                'jumlah_jam'    => $jumlahJam,
-                'alasan'        => $data['alasan'],
-                'status'        => 'menunggu',
+                'jam_mulai'      => $data['jam_mulai'],
+                'jam_selesai'    => $data['jam_selesai'],
+                'jumlah_jam'     => $jumlahJam,
+                'alasan'         => $data['alasan'],
+                'status'         => 'menunggu',
             ]);
 
             // Generate approval ke atasan jabatan utama
@@ -55,6 +57,9 @@ class LemburService
                     }
                 }
             }
+
+            // Kirim notifikasi ke semua atasan
+            $this->notifikasiService->kirimNotifikasiLembur($lembur);
         });
     }
 
