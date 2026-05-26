@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pegawai; 
 use App\Services\PegawaiService;
 use App\Services\JabatanService;
 use Illuminate\Http\Request;
@@ -192,23 +193,20 @@ public function uploadFoto(Request $request, int $id)
         'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
-    $pegawai = $this->pegawaiService->findById($id);
-
-    // Hapus foto lama
-    if ($pegawai->foto && file_exists(public_path($pegawai->foto))) {
-        unlink(public_path($pegawai->foto));
-    }
-
-    // Generate nama file unik
     $extension = $request->file('foto')->getClientOriginalExtension();
     $filename  = time() . '_' . $id . '.' . $extension;
+    $destPath  = public_path('foto-pegawai');
 
-    // Pindahkan ke public/foto-pegawai
-    $request->file('foto')->move(public_path('foto-pegawai'), $filename);
+    if (!file_exists($destPath)) {
+        mkdir($destPath, 0777, true);
+    }
 
-    // Simpan path lengkap ke database
-    $this->pegawaiService->update($id, ['foto' => 'foto-pegawai/' . $filename]);
+    $request->file('foto')->move($destPath, $filename);
 
-    return back()->with('success', 'Foto profil berhasil diperbarui.');
+    $pegawai = Pegawai::findOrFail($id);
+    $pegawai->foto = $filename;
+    $pegawai->save();
+
+    return response()->json(['foto' => $filename]);
 }
 }
