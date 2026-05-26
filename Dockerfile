@@ -24,4 +24,4 @@ COPY Caddyfile /etc/caddy/Caddyfile
 
 ENV SERVER_NAME=":8000"
 
-CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp run --config /etc/caddy/Caddyfile"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && ls -la /app/public/ && ls -la /app/public/foto-pegawai/ 2>/dev/null || echo 'FOLDER TIDAK ADA' && cat /etc/caddy/Caddyfile && frankenphp run --config /etc/caddy/Caddyfile"]
