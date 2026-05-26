@@ -6,11 +6,11 @@ use App\Models\Pegawai;
 use App\Services\PegawaiService;
 use App\Services\JabatanService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use App\Exports\PegawaiExport;
 use App\Imports\PegawaiImport;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Illuminate\Support\Facades\Storage;
 
 class PegawaiController extends Controller
 {
@@ -32,33 +32,41 @@ class PegawaiController extends Controller
         return view('pegawai.create', compact('jabatans', 'roles'));
     }
 
-   public function store(Request $request)
-{
-    
-    $request->validate([
-        'nama_lengkap'  => 'required|string|max:255',
-        'email'         => 'required|email|unique:users,email',
-        'password'      => 'required|min:6',
-        'jenis_kelamin' => 'required|in:L,P',
-        'jenis_pegawai' => 'required|in:dosen,tendik',
-        'status'        => 'required|in:aktif,nonaktif,pensiun',
-        'role'          => 'required|exists:roles,name',
-        'nip'           => 'nullable|unique:pegawais,nip',
-        'nidn'          => 'nullable|unique:pegawais,nidn',
-        'jabatan_id'    => 'nullable|exists:jabatans,id',
-        'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_lengkap'  => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email',
+            'password'      => 'required|min:6',
+            'jenis_kelamin' => 'required|in:L,P',
+            'jenis_pegawai' => 'required|in:dosen,tendik',
+            'status'        => 'required|in:aktif,nonaktif,pensiun',
+            'role'          => 'required|exists:roles,name',
+            'nip'           => 'nullable|unique:pegawais,nip',
+            'nidn'          => 'nullable|unique:pegawais,nidn',
+            'jabatan_id'    => 'nullable|exists:jabatans,id',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-    $data = $request->all();
+        $data = $request->all();
 
-    // Handle foto upload
-    if ($request->hasFile('foto')) {
-        $data['foto'] = $request->file('foto')->store('foto-pegawai', 'public');
+        // Handle foto upload
+        if ($request->hasFile('foto')) {
+            $file     = $request->file('foto');
+            $filename = Str::ulid() . '.' . $file->getClientOriginalExtension();
+            $destPath = public_path('foto-pegawai');
+
+            if (!file_exists($destPath)) {
+                mkdir($destPath, 0777, true);
+            }
+
+            $file->move($destPath, $filename);
+            $data['foto'] = 'foto-pegawai/' . $filename;
+        }
+
+        $this->pegawaiService->create($data);
+        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
-
-    $this->pegawaiService->create($data);
-    return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
-}
 
     public function show(int $id)
     {
@@ -84,17 +92,34 @@ class PegawaiController extends Controller
             'jenis_pegawai' => 'required|in:dosen,tendik',
             'status'        => 'required|in:aktif,nonaktif,pensiun',
             'role'          => 'required|exists:roles,name',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $this->pegawaiService->update($id, $request->all());
+        $data = $request->all();
+
+        // Handle foto upload
+        if ($request->hasFile('foto')) {
+            $file     = $request->file('foto');
+            $filename = Str::ulid() . '.' . $file->getClientOriginalExtension();
+            $destPath = public_path('foto-pegawai');
+
+            if (!file_exists($destPath)) {
+                mkdir($destPath, 0777, true);
+            }
+
+            $file->move($destPath, $filename);
+            $data['foto'] = 'foto-pegawai/' . $filename;
+        }
+
+        $this->pegawaiService->update($id, $data);
         return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
     public function destroy(int $id)
-{
-    $this->pegawaiService->delete($id);
-    return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
-}
+    {
+        $this->pegawaiService->delete($id);
+        return redirect()->route('pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
+    }
 
     // Assign jabatan tambahan (multi-role)
     public function assignJabatan(Request $request, int $id)
@@ -115,98 +140,97 @@ class PegawaiController extends Controller
         return back()->with('success', 'Jabatan berhasil dinonaktifkan.');
     }
 
-// Export Excel
-public function exportExcel()
-{
-    $export      = new PegawaiExport();
-    $spreadsheet = $export->download();
-    $writer      = new Xlsx($spreadsheet);
-    $filename    = 'data-pegawai-' . now()->format('Ymd') . '.xlsx';
-    $path        = storage_path('app/public/' . $filename);
-    $writer->save($path);
+    // Export Excel
+    public function exportExcel()
+    {
+        $export      = new PegawaiExport();
+        $spreadsheet = $export->download();
+        $writer      = new Xlsx($spreadsheet);
+        $filename    = 'data-pegawai-' . now()->format('Ymd') . '.xlsx';
+        $path        = storage_path('app/public/' . $filename);
+        $writer->save($path);
 
-    return response()->download($path)->deleteFileAfterSend(true);
-}
-
-// Download template import
-public function templateImport()
-{
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet       = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('Template Import');
-
-    $headers = ['Nama Lengkap*', 'NIP', 'NIDN', 'Email*', 'Jenis Pegawai* (dosen/tendik)',
-                'Jenis Kelamin* (L/P)', 'No HP'];
-
-    foreach ($headers as $i => $h) {
-        $col = chr(65 + $i);
-        $sheet->setCellValue($col . '1', $h);
-        $sheet->getColumnDimension($col)->setWidth(25);
+        return response()->download($path)->deleteFileAfterSend(true);
     }
 
-    $sheet->getStyle('A1:G1')->applyFromArray([
-        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-        'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                   'startColor' => ['rgb' => '1E3A5F']],
-    ]);
+    // Download template import
+    public function templateImport()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Import');
 
-    // Contoh data
-    $sheet->setCellValue('A2', 'Dr. Ahmad Contoh');
-    $sheet->setCellValue('C2', '0123456789');
-    $sheet->setCellValue('D2', 'ahmad@uim.ac.id');
-    $sheet->setCellValue('E2', 'dosen');
-    $sheet->setCellValue('F2', 'L');
-    $sheet->setCellValue('G2', '081234567890');
+        $headers = ['Nama Lengkap*', 'NIP', 'NIDN', 'Email*', 'Jenis Pegawai* (dosen/tendik)',
+                    'Jenis Kelamin* (L/P)', 'No HP'];
 
-    $writer   = new Xlsx($spreadsheet);
-    $filename = 'template-import-pegawai.xlsx';
-    $path     = storage_path('app/public/' . $filename);
-    $writer->save($path);
+        foreach ($headers as $i => $h) {
+            $col = chr(65 + $i);
+            $sheet->setCellValue($col . '1', $h);
+            $sheet->getColumnDimension($col)->setWidth(25);
+        }
 
-    return response()->download($path)->deleteFileAfterSend(true);
-}
+        $sheet->getStyle('A1:G1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                       'startColor' => ['rgb' => '1E3A5F']],
+        ]);
 
-// Import Excel
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'file_import' => 'required|file|mimes:xlsx,xls|max:2048',
-    ]);
+        // Contoh data
+        $sheet->setCellValue('A2', 'Dr. Ahmad Contoh');
+        $sheet->setCellValue('C2', '0123456789');
+        $sheet->setCellValue('D2', 'ahmad@uim.ac.id');
+        $sheet->setCellValue('E2', 'dosen');
+        $sheet->setCellValue('F2', 'L');
+        $sheet->setCellValue('G2', '081234567890');
 
-    $path = $request->file('file_import')->store('imports', 'local');
+        $writer   = new Xlsx($spreadsheet);
+        $filename = 'template-import-pegawai.xlsx';
+        $path     = storage_path('app/public/' . $filename);
+        $writer->save($path);
 
-    $import = new PegawaiImport();
-    $import->import(storage_path('app/' . $path));
-
-    $message = "Berhasil import {$import->success} pegawai.";
-    if (!empty($import->errors)) {
-        $message .= ' Terdapat ' . count($import->errors) . ' baris error: ' . implode(' | ', $import->errors);
+        return response()->download($path)->deleteFileAfterSend(true);
     }
 
-    return redirect()->route('pegawai.index')->with('success', $message);
-}
+    // Import Excel
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file_import' => 'required|file|mimes:xlsx,xls|max:2048',
+        ]);
 
+        $path = $request->file('file_import')->store('imports', 'local');
 
-public function uploadFoto(Request $request, int $id)
-{
-    $request->validate([
-        'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-    ]);
+        $import = new PegawaiImport();
+        $import->import(storage_path('app/' . $path));
 
-    $extension = $request->file('foto')->getClientOriginalExtension();
-    $filename  = time() . '_' . $id . '.' . $extension;
-    $destPath  = public_path('foto-pegawai');
+        $message = "Berhasil import {$import->success} pegawai.";
+        if (!empty($import->errors)) {
+            $message .= ' Terdapat ' . count($import->errors) . ' baris error: ' . implode(' | ', $import->errors);
+        }
 
-    if (!file_exists($destPath)) {
-        mkdir($destPath, 0777, true);
+        return redirect()->route('pegawai.index')->with('success', $message);
     }
 
-    $request->file('foto')->move($destPath, $filename);
+    public function uploadFoto(Request $request, int $id)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-    $pegawai = Pegawai::findOrFail($id);
-    $pegawai->foto = $filename;
-    $pegawai->save();
+        $file     = $request->file('foto');
+        $filename = Str::ulid() . '.' . $file->getClientOriginalExtension();
+        $destPath = public_path('foto-pegawai');
 
-    return response()->json(['foto' => $filename]);
-}
+        if (!file_exists($destPath)) {
+            mkdir($destPath, 0777, true);
+        }
+
+        $file->move($destPath, $filename);
+
+        $pegawai       = Pegawai::findOrFail($id);
+        $pegawai->foto = 'foto-pegawai/' . $filename;
+        $pegawai->save();
+
+        return response()->json(['foto' => 'foto-pegawai/' . $filename]);
+    }
 }
