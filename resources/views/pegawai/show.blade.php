@@ -10,7 +10,7 @@
         <div class="flex justify-between items-start mb-4">
     <div class="flex items-center gap-4">
         {{-- Foto --}}
-        <img src="{{ $pegawai->foto ? asset('storage/'.$pegawai->foto) : 'https://ui-avatars.com/api/?name='.urlencode($pegawai->nama_lengkap).'&background=1E3A5F&color=fff' }}"
+        <img src="{{ $pegawai->foto ? asset($pegawai->foto) : 'https://ui-avatars.com/api/?name='.urlencode($pegawai->nama_lengkap).'&background=1E3A5F&color=fff' }}"
     class="w-20 h-20 rounded-full object-cover border-2 border-gray-200">
         <div>
             <h3 class="text-xl font-bold text-gray-800">{{ $pegawai->nama_lengkap }}</h3>

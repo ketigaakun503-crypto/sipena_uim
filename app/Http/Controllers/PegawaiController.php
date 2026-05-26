@@ -197,7 +197,9 @@ public function uploadFoto(Request $request, int $id)
         Storage::disk('public')->delete($pegawai->foto);
     }
 
-    $path = $request->file('foto')->store('foto-pegawai', 'public');
+    $filename = time() . '_' . $request->file('foto')->getClientOriginalName();
+$request->file('foto')->move(public_path('foto-pegawai'), $filename);
+$path = 'foto-pegawai/' . $filename;
     $this->pegawaiService->update($id, ['foto' => $path]);
 
     return back()->with('success', 'Foto profil berhasil diperbarui.');

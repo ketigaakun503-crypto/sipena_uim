@@ -10,7 +10,7 @@
 <div class="flex items-center gap-5 pb-4 border-b border-gray-100">
     <div id="foto-preview" class="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center border-2 border-gray-200 overflow-hidden flex-shrink-0">
         @if($pegawai->foto)
-            <img src="{{ asset('storage/' . $pegawai->foto) }}" class="w-full h-full object-cover">
+            <img src="{{ asset($pegawai->foto) }}" class="w-full h-full object-cover">
         @else
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
