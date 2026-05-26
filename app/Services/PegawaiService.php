@@ -81,7 +81,14 @@ public function create(array $data): void
         if (!empty($data['role'])) {
             $pegawai->user->syncRoles([$data['role']]);
         }
-
+// Handle upload foto
+$fotoPath = null;
+if (!empty($data['foto']) && $data['foto'] instanceof \Illuminate\Http\UploadedFile) {
+    $extension = $data['foto']->getClientOriginalExtension();
+    $filename  = time() . '_' . uniqid() . '.' . $extension;
+    $data['foto']->move(public_path('foto-pegawai'), $filename);
+    $fotoPath = 'foto-pegawai/' . $filename;
+}
         // Update data pegawai
         $updateData = array_filter([
             'nip'           => $data['nip'] ?? null,

@@ -192,15 +192,18 @@ public function uploadFoto(Request $request, int $id)
 
     $pegawai = $this->pegawaiService->findById($id);
 
-    // Hapus foto lama kalau ada
-    if ($pegawai->foto && Storage::disk('public')->exists($pegawai->foto)) {
-        Storage::disk('public')->delete($pegawai->foto);
+    // Hapus foto lama
+    if ($pegawai->foto && file_exists(public_path($pegawai->foto))) {
+        unlink(public_path($pegawai->foto));
     }
 
-    $filename = time() . '_' . $request->file('foto')->getClientOriginalName();
-$request->file('foto')->move(public_path('foto-pegawai'), $filename);
-$path = 'foto-pegawai/' . $filename;
-    $this->pegawaiService->update($id, ['foto' => $path]);
+    // Simpan dengan nama unik
+    $extension = $request->file('foto')->getClientOriginalExtension();
+    $filename  = 'foto-pegawai/' . time() . '_' . $id . '.' . $extension;
+
+    $request->file('foto')->move(public_path('foto-pegawai'), basename($filename));
+
+    $this->pegawaiService->update($id, ['foto' => $filename]);
 
     return back()->with('success', 'Foto profil berhasil diperbarui.');
 }
