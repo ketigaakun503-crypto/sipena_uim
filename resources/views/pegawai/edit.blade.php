@@ -119,4 +119,16 @@
         </div>
     </form>
 </div>
+<script>
+function previewFoto(input) {
+    const preview = document.getElementById('foto-preview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 @endsection
