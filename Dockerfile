@@ -24,4 +24,4 @@ COPY Caddyfile /etc/caddy/Caddyfile
 
 ENV SERVER_NAME=":8000"
 
-CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp run --config /etc/caddy/Caddyfile"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp run --config /etc/caddy/Caddyfile --verbose"]
