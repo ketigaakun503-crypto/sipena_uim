@@ -19,7 +19,6 @@ RUN npm install && npm run build
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
+COPY Caddyfile /etc/caddy/Caddyfile
 
-ENV SERVER_NAME=":8000"
-
-CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp php-server --listen=0.0.0.0:${PORT:-8000} --document-root=/app/public"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && frankenphp run --config /etc/caddy/Caddyfile"]
